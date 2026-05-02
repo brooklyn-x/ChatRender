@@ -1,20 +1,35 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# ChatReader
 
-# Run and deploy your AI Studio app
+Read your WhatsApp exports privately. No servers. No accounts. No tracking.
 
-This contains everything you need to run your app locally.
+Your chat is encrypted with AES-256-GCM directly in the browser, stored locally in IndexedDB, and never leaves your device.
 
-View your app in AI Studio: https://ai.studio/apps/f9e42e26-e633-47e2-8fef-b2df523dc85c
+## Features
+
+- Upload `.txt` or `.zip` WhatsApp exports
+- AES-256-GCM encryption with a password you set
+- Media support — images, video, audio, documents
+- Search and filter messages by sender
+- Light / dark mode
+- Zero network requests after page load
 
 ## Run Locally
 
-**Prerequisites:**  Node.js
-
+**Prerequisites:** Node.js
 
 1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+   ```
+   npm install
+   ```
+2. Start the dev server:
+   ```
+   npm run dev
+   ```
+
+## Stack
+
+- React 19 + TypeScript + Vite
+- Tailwind CSS v4
+- Web Crypto API (AES-256-GCM)
+- IndexedDB via `idb`
+- `react-virtuoso` for virtualized message rendering
