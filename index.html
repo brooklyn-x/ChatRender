@@ -3,11 +3,64 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Google AI Studio App</title>
+
+    <!-- Primary SEO -->
+    <title>ChatReader — Read Your WhatsApp Exports, Privately</title>
+    <meta name="description" content="Turn your exported WhatsApp chats into a beautiful, readable archive. ChatReader encrypts everything locally in your browser using AES-256 — no server, no account, no data sharing." />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#0a0a0a" />
+
+    <!-- Canonical -->
+    <link rel="canonical" href="https://chatreader.app/" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="ChatReader" />
+    <meta property="og:title" content="ChatReader — Read Your WhatsApp Exports, Privately" />
+    <meta property="og:description" content="Turn your exported WhatsApp chats into a readable archive. Encrypted locally in your browser using AES-256. No server. No account. No data sharing." />
+    <meta property="og:url" content="https://chatreader.app/" />
+    <meta property="og:image" content="https://chatreader.app/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="ChatReader — Read Your WhatsApp Exports, Privately" />
+    <meta name="twitter:description" content="Turn your exported WhatsApp chats into a readable archive. Encrypted locally in your browser using AES-256. No server. No account." />
+    <meta name="twitter:image" content="https://chatreader.app/og-image.png" />
+
+    <!-- JSON-LD Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "ChatReader",
+      "url": "https://chatreader.app/",
+      "description": "Read and encrypt your exported WhatsApp chats locally in your browser. AES-256 encryption. No server. No account required.",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Any",
+      "browserRequirements": "Requires JavaScript",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "featureList": [
+        "AES-256-GCM local encryption",
+        "No server communication",
+        "WhatsApp .zip and .txt export support",
+        "Media file support",
+        "Password-protected archives",
+        "Browser-only storage via IndexedDB"
+      ]
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-

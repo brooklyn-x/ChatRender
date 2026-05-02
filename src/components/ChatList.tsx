@@ -1,5 +1,5 @@
 import React from 'react';
-import { MessageSquare, Calendar, Trash2, Lock } from 'lucide-react';
+import { MessageSquare, Trash2 } from 'lucide-react';
 import { EncryptedChat } from '../utils/db';
 
 interface ChatListProps {
@@ -9,53 +9,63 @@ interface ChatListProps {
 }
 
 export function ChatList({ chats, onSelectChat, onDeleteChat }: ChatListProps) {
-  if (chats.length === 0) {
-    return null;
-  }
+  if (chats.length === 0) return null;
 
   return (
-    <div className="w-full max-w-2xl mx-auto mt-8">
-      <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-        <Lock size={18} className="text-emerald-600" />
-        Your Encrypted Chats
-      </h3>
-      
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <ul className="divide-y divide-gray-100">
-          {chats.map((chat) => (
-            <li key={chat.id} className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors group">
-              <button 
-                onClick={() => onSelectChat(chat)}
-                className="flex-1 flex items-center gap-4 text-left"
-              >
-                <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center flex-shrink-0">
-                  <MessageSquare size={20} />
-                </div>
-                <div>
-                  <h4 className="font-medium text-gray-900 truncate max-w-[200px] sm:max-w-xs">{chat.name}</h4>
-                  <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
-                    <Calendar size={12} />
-                    <span>Imported on {new Date(chat.createdAt).toLocaleDateString()}</span>
-                  </div>
-                </div>
-              </button>
-              
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (window.confirm('Are you sure you want to delete this encrypted chat?')) {
-                    onDeleteChat(chat.id);
-                  }
-                }}
-                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
-                title="Delete Chat"
-              >
-                <Trash2 size={18} />
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
+    <div className="w-full border border-white/10">
+      {chats.map((chat, i) => (
+        <div
+          key={chat.id}
+          className={`flex items-center justify-between group transition-colors duration-150 hover:bg-white/3 ${
+            i !== 0 ? 'border-t border-white/8' : ''
+          }`}
+        >
+          {/* Main row — click to open */}
+          <button
+            onClick={() => onSelectChat(chat)}
+            className="flex-1 flex items-center gap-5 px-6 py-5 text-left cursor-pointer min-w-0"
+          >
+            {/* Index */}
+            <span className="text-[11px] font-mono text-white/40 w-5 shrink-0">
+              {String(i + 1).padStart(2, '0')}
+            </span>
+
+            {/* Icon */}
+            <div className="w-8 h-8 border border-white/20 flex items-center justify-center shrink-0 text-white/45 group-hover:text-white/70 transition-colors">
+              <MessageSquare size={14} strokeWidth={1.5} />
+            </div>
+
+            {/* Name + date */}
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-white/85 group-hover:text-white transition-colors truncate tracking-tight">
+                {chat.name}
+              </p>
+              <p className="text-[11px] text-white/45 mt-0.5 font-mono">
+                {new Date(chat.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+              </p>
+            </div>
+
+            {/* Open label */}
+            <span className="text-[11px] tracking-widest text-white/35 group-hover:text-white/60 uppercase transition-colors shrink-0 hidden sm:block">
+              Open ↗
+            </span>
+          </button>
+
+          {/* Delete */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (window.confirm('Delete this encrypted chat?')) {
+                onDeleteChat(chat.id);
+              }
+            }}
+            className="px-5 py-5 text-white/10 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 cursor-pointer border-l border-white/8 shrink-0"
+            aria-label="Delete chat"
+          >
+            <Trash2 size={14} strokeWidth={1.5} />
+          </button>
+        </div>
+      ))}
     </div>
   );
 }

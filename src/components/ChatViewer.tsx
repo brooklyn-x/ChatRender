@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Virtuoso } from 'react-virtuoso';
-import { format, isSameDay, parseISO } from 'date-fns';
-import { Search, Filter, X, BarChart2, ArrowLeft, Image as ImageIcon, Video as VideoIcon, FileText, Headphones } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
+import { Search, X, BarChart2, ArrowLeft, Image as ImageIcon, Video as VideoIcon, FileText, Headphones, Filter } from 'lucide-react';
 import { ParsedChat, ChatMessage } from '../utils/whatsappParser';
 
 interface ChatViewerProps {
@@ -10,11 +10,22 @@ interface ChatViewerProps {
   onBack: () => void;
 }
 
+const SENDER_ACCENTS = [
+  'text-blue-400',
+  'text-violet-400',
+  'text-amber-400',
+  'text-rose-400',
+  'text-cyan-400',
+  'text-fuchsia-400',
+];
+
 export function ChatViewer({ chat, chatName, onBack }: ChatViewerProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSender, setSelectedSender] = useState<string | null>(null);
   const [showStats, setShowStats] = useState(false);
-  const [meUser, setMeUser] = useState<string>(chat.senders.length > 1 ? chat.senders[1] : chat.senders[0]);
+  const [meUser, setMeUser] = useState<string>(
+    chat.senders.length > 1 ? chat.senders[1] : chat.senders[0]
+  );
 
   const filteredMessages = useMemo(() => {
     return chat.messages.filter(msg => {
@@ -24,22 +35,17 @@ export function ChatViewer({ chat, chatName, onBack }: ChatViewerProps) {
     });
   }, [chat.messages, searchQuery, selectedSender]);
 
-  const senderColors = useMemo(() => {
-    const colors = [
-      'text-blue-600', 'text-emerald-600', 'text-purple-600', 
-      'text-orange-600', 'text-pink-600', 'text-indigo-600'
-    ];
+  const senderAccents = useMemo(() => {
     const map: Record<string, string> = {};
     chat.senders.forEach((sender, i) => {
-      map[sender] = colors[i % colors.length];
+      map[sender] = SENDER_ACCENTS[i % SENDER_ACCENTS.length];
     });
     return map;
   }, [chat.senders]);
 
   const groupedDates = useMemo(() => {
-    const dates: { index: number, date: string }[] = [];
+    const dates: { index: number; date: string }[] = [];
     let lastDate = '';
-    
     filteredMessages.forEach((msg, index) => {
       try {
         const dateStr = format(parseISO(msg.timestamp), 'MMMM d, yyyy');
@@ -47,8 +53,8 @@ export function ChatViewer({ chat, chatName, onBack }: ChatViewerProps) {
           dates.push({ index, date: dateStr });
           lastDate = dateStr;
         }
-      } catch (e) {
-        // Ignore invalid dates
+      } catch {
+        // ignore invalid dates
       }
     });
     return dates;
@@ -61,15 +67,11 @@ export function ChatViewer({ chat, chatName, onBack }: ChatViewerProps) {
 
     if (msg.type === 'system') {
       return (
-        <div className="flex flex-col items-center my-4">
-          {dateHeader && (
-            <div className="bg-gray-200 text-gray-600 text-xs px-3 py-1 rounded-lg mb-4 shadow-sm">
-              {dateHeader.date}
-            </div>
-          )}
-          <div className="bg-yellow-100/80 text-yellow-800 text-xs px-4 py-1.5 rounded-lg text-center max-w-md shadow-sm">
+        <div className="flex flex-col items-center px-4 my-3">
+          {dateHeader && <DateDivider date={dateHeader.date} />}
+          <span className="text-[11px] font-mono text-white/25 tracking-wide text-center px-4">
             {msg.message}
-          </div>
+          </span>
         </div>
       );
     }
@@ -77,77 +79,60 @@ export function ChatViewer({ chat, chatName, onBack }: ChatViewerProps) {
     const isMe = msg.sender === meUser;
 
     return (
-      <div className="flex flex-col px-4">
-        {dateHeader && (
-          <div className="flex justify-center my-4">
-            <div className="bg-gray-200 text-gray-600 text-xs px-3 py-1 rounded-lg shadow-sm">
-              {dateHeader.date}
-            </div>
-          </div>
-        )}
-        
-        <div className={`flex w-full mb-1 ${isMe ? 'justify-end' : 'justify-start'} ${!isConsecutive ? 'mt-2' : ''}`}>
-          <div 
-            className={`max-w-[75%] md:max-w-[60%] rounded-2xl px-3 py-2 shadow-sm relative
-              ${isMe 
-                ? 'bg-emerald-100 text-gray-800 rounded-tr-none' 
-                : 'bg-white text-gray-800 rounded-tl-none border border-gray-100'}`}
+      <div className="flex flex-col px-4 md:px-8">
+        {dateHeader && <DateDivider date={dateHeader.date} />}
+
+        <div className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} ${isConsecutive ? 'mt-0.5' : 'mt-3'}`}>
+          <div
+            className={`max-w-[72%] md:max-w-[55%] px-3.5 py-2.5 relative
+              ${isMe
+                ? 'bg-white/[0.07] border border-white/10'
+                : 'bg-white/[0.04] border border-white/[0.06]'
+              }`}
           >
             {!isMe && !isConsecutive && (
-              <div className={`text-xs font-bold mb-1 ${senderColors[msg.sender] || 'text-gray-600'}`}>
+              <p className={`text-[11px] font-medium tracking-wide mb-1 ${senderAccents[msg.sender] ?? 'text-white/50'}`}>
                 {msg.sender}
-              </div>
+              </p>
             )}
-            
+
             {msg.attachment && (
-              <div className="mb-2 rounded-xl overflow-hidden bg-black/5 flex items-center justify-center">
+              <div className="mb-2 overflow-hidden bg-white/5 flex items-center justify-center">
                 {msg.attachment.dataUrl ? (
                   msg.attachment.dataUrl.startsWith('data:video/') ? (
-                    <video 
-                      src={msg.attachment.dataUrl} 
-                      controls
-                      className="max-w-full max-h-64 object-contain"
-                    />
+                    <video src={msg.attachment.dataUrl} controls className="max-w-full max-h-56 object-contain" />
                   ) : msg.attachment.dataUrl.startsWith('data:audio/') ? (
-                    <audio 
-                      src={msg.attachment.dataUrl} 
-                      controls
-                      className="max-w-full"
-                    />
+                    <audio src={msg.attachment.dataUrl} controls className="max-w-full" />
                   ) : msg.attachment.dataUrl.startsWith('data:image/') ? (
-                    <img 
-                      src={msg.attachment.dataUrl} 
-                      alt="Attached media" 
-                      className="max-w-full max-h-64 object-contain"
-                      loading="lazy"
-                    />
+                    <img src={msg.attachment.dataUrl} alt="Attached media" className="max-w-full max-h-56 object-contain" loading="lazy" />
                   ) : (
-                    <a href={msg.attachment.dataUrl} download={msg.attachment.fileName} className="p-4 flex flex-col items-center justify-center text-emerald-600 hover:text-emerald-700 gap-2 w-full">
-                      <FileText size={24} />
-                      <span className="text-xs underline">{msg.attachment.fileName}</span>
+                    <a href={msg.attachment.dataUrl} download={msg.attachment.fileName}
+                      className="p-4 flex flex-col items-center gap-2 text-white/40 hover:text-white/70 transition-colors w-full">
+                      <FileText size={20} strokeWidth={1.5} />
+                      <span className="text-[11px] font-mono underline">{msg.attachment.fileName}</span>
                     </a>
                   )
                 ) : (
-                  <div className="p-4 flex flex-col items-center justify-center text-gray-500 gap-2 w-full">
-                    {msg.attachment.fileName.match(/\.(mp4|mov|webm|mkv)$/i) ? <VideoIcon size={24} /> : 
-                     msg.attachment.fileName.match(/\.(opus|mp3|wav)$/i) ? <Headphones size={24} /> :
-                     msg.attachment.fileName.match(/\.(pdf|doc|docx|xls|xlsx)$/i) ? <FileText size={24} /> :
-                     <ImageIcon size={24} />}
-                    <span className="text-xs">{msg.attachment.fileName}</span>
+                  <div className="p-4 flex flex-col items-center gap-2 text-white/25 w-full">
+                    {msg.attachment.fileName.match(/\.(mp4|mov|webm|mkv)$/i) ? <VideoIcon size={20} strokeWidth={1.5} /> :
+                     msg.attachment.fileName.match(/\.(opus|mp3|wav)$/i) ? <Headphones size={20} strokeWidth={1.5} /> :
+                     msg.attachment.fileName.match(/\.(pdf|doc|docx|xls|xlsx)$/i) ? <FileText size={20} strokeWidth={1.5} /> :
+                     <ImageIcon size={20} strokeWidth={1.5} />}
+                    <span className="text-[11px] font-mono text-white/30">{msg.attachment.fileName}</span>
                   </div>
                 )}
               </div>
             )}
-            
+
             {msg.message && (
-              <div className="text-sm whitespace-pre-wrap break-words">
+              <p className="text-sm text-white/85 leading-relaxed whitespace-pre-wrap break-words">
                 {msg.message}
-              </div>
+              </p>
             )}
-            
-            <div className="text-[10px] text-gray-500 text-right mt-1 flex justify-end items-center gap-1">
+
+            <p className="text-[10px] text-white/25 text-right mt-1.5 font-mono">
               {format(parseISO(msg.timestamp), 'h:mm a')}
-            </div>
+            </p>
           </div>
         </div>
       </div>
@@ -155,149 +140,152 @@ export function ChatViewer({ chat, chatName, onBack }: ChatViewerProps) {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-[#efeae2]">
+    <div className="flex flex-col h-screen bg-[#0a0a0a]" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
+
       {/* Header */}
-      <header className="bg-gray-900 text-white px-4 py-3 flex items-center justify-between shadow-md z-10">
-        <div className="flex items-center gap-3">
-          <button onClick={onBack} className="p-2 hover:bg-gray-800 rounded-full transition-colors">
-            <ArrowLeft size={20} />
+      <header className="shrink-0 border-b border-white/8 px-4 md:px-8 h-14 flex items-center justify-between bg-[#0a0a0a]/95 backdrop-blur-sm z-10">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={onBack}
+            className="text-white/40 hover:text-white transition-colors cursor-pointer flex items-center gap-2"
+          >
+            <ArrowLeft size={16} strokeWidth={1.5} />
           </button>
           <div>
-            <h1 className="font-semibold text-lg leading-tight">{chatName}</h1>
-            <p className="text-xs text-gray-400">{chat.messages.length} messages</p>
+            <h1 className="text-sm font-medium text-white tracking-tight">{chatName}</h1>
+            <p className="text-[11px] text-white/30 font-mono">{chat.messages.length.toLocaleString()} messages</p>
           </div>
         </div>
-        
-        <div className="flex items-center gap-2">
-          <button 
-            onClick={() => setShowStats(!showStats)}
-            className={`p-2 rounded-full transition-colors ${showStats ? 'bg-emerald-600' : 'hover:bg-gray-800'}`}
-            title="Chat Statistics"
-          >
-            <BarChart2 size={20} />
-          </button>
-        </div>
+
+        <button
+          onClick={() => setShowStats(!showStats)}
+          className={`flex items-center gap-1.5 text-[11px] tracking-widest uppercase transition-colors cursor-pointer px-3 py-1.5 border ${
+            showStats
+              ? 'border-white/30 text-white'
+              : 'border-white/10 text-white/35 hover:text-white/60 hover:border-white/20'
+          }`}
+        >
+          <BarChart2 size={12} strokeWidth={1.5} />
+          <span>Stats</span>
+        </button>
       </header>
 
       {/* Toolbar */}
-      <div className="bg-white border-b border-gray-200 px-4 py-2 flex flex-wrap gap-3 items-center shadow-sm z-10">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input 
-            type="text" 
-            placeholder="Search messages..." 
+      <div className="shrink-0 border-b border-white/[0.06] px-4 md:px-8 py-2.5 flex flex-wrap gap-3 items-center bg-[#0a0a0a] z-10">
+        {/* Search */}
+        <div className="relative flex-1 min-w-[160px]">
+          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/25" strokeWidth={1.5} />
+          <input
+            type="text"
+            placeholder="Search messages"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-1.5 bg-gray-100 border-transparent focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 rounded-full text-sm transition-all outline-none"
+            className="w-full pl-8 pr-8 py-1.5 bg-white/4 border border-white/8 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-white/20 transition-all font-['Inter',system-ui]"
           />
           {searchQuery && (
-            <button 
-              onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-            >
-              <X size={14} />
+            <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 cursor-pointer">
+              <X size={13} />
             </button>
           )}
         </div>
-        
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 hide-scrollbar">
-          <Filter size={16} className="text-gray-400 flex-shrink-0" />
-          <button
-            onClick={() => setSelectedSender(null)}
-            className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors
-              ${selectedSender === null ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-          >
-            All
-          </button>
-          {chat.senders.map(sender => (
+
+        {/* Sender filter pills */}
+        <div className="flex items-center gap-1.5 overflow-x-auto">
+          <Filter size={12} className="text-white/20 shrink-0" strokeWidth={1.5} />
+          {[null, ...chat.senders].map((sender) => (
             <button
-              key={sender}
+              key={sender ?? '__all__'}
               onClick={() => setSelectedSender(sender)}
-              className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors
-                ${selectedSender === sender ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+              className={`px-2.5 py-1 text-[11px] font-mono tracking-wide whitespace-nowrap transition-colors cursor-pointer border ${
+                selectedSender === sender
+                  ? 'border-white/40 text-white bg-white/8'
+                  : 'border-white/8 text-white/35 hover:text-white/60 hover:border-white/15'
+              }`}
             >
-              {sender}
+              {sender ?? 'All'}
             </button>
           ))}
         </div>
-        
-        <div className="flex items-center gap-2 ml-auto border-l border-gray-200 pl-3">
-          <span className="text-xs font-medium text-gray-500 whitespace-nowrap">My Side:</span>
+
+        {/* Me selector */}
+        <div className="flex items-center gap-2 ml-auto border-l border-white/8 pl-3 shrink-0">
+          <span className="text-[11px] text-white/25 uppercase tracking-widest whitespace-nowrap">Me:</span>
           <select
             value={meUser}
             onChange={(e) => setMeUser(e.target.value)}
-            className="text-xs bg-gray-100 border-transparent rounded-full px-3 py-1 focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none cursor-pointer max-w-[120px] truncate"
+            className="text-[11px] font-mono bg-white/5 border border-white/8 text-white/60 px-2.5 py-1 focus:outline-none focus:border-white/20 cursor-pointer max-w-[130px] truncate"
           >
             {chat.senders.map(sender => (
-              <option key={sender} value={sender}>{sender}</option>
+              <option key={sender} value={sender} className="bg-[#111] text-white">{sender}</option>
             ))}
           </select>
         </div>
       </div>
 
-      {/* Main Content */}
+      {/* Main area */}
       <div className="flex-1 relative flex overflow-hidden">
-        {/* Chat Area */}
-        <div className="flex-1 h-full bg-[#efeae2] relative" style={{ backgroundImage: 'url("https://www.transparenttextures.com/patterns/cubes.png")', backgroundBlendMode: 'overlay', backgroundColor: 'rgba(239, 234, 226, 0.9)' }}>
+        {/* Messages */}
+        <div className="flex-1 h-full">
           {filteredMessages.length > 0 ? (
             <Virtuoso
               data={filteredMessages}
               itemContent={renderMessage}
-              className="h-full w-full scroll-smooth"
+              className="h-full w-full"
               initialTopMostItemIndex={filteredMessages.length - 1}
               followOutput="smooth"
               increaseViewportBy={800}
               defaultItemHeight={80}
+              style={{ paddingTop: '16px', paddingBottom: '24px' }}
             />
           ) : (
-            <div className="h-full flex items-center justify-center text-gray-500">
-              No messages found.
+            <div className="h-full flex items-center justify-center">
+              <p className="text-white/20 text-sm font-mono">No messages found.</p>
             </div>
           )}
         </div>
 
-        {/* Stats Sidebar */}
+        {/* Stats sidebar */}
         {showStats && (
-          <div className="w-80 bg-white border-l border-gray-200 shadow-xl flex flex-col h-full overflow-y-auto z-20 absolute right-0 md:relative">
-            <div className="p-4 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white">
-              <h3 className="font-semibold text-gray-800">Chat Statistics</h3>
-              <button onClick={() => setShowStats(false)} className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 md:hidden">
-                <X size={18} />
+          <div className="w-72 shrink-0 border-l border-white/8 bg-[#0a0a0a] flex flex-col overflow-y-auto z-20 absolute right-0 h-full md:relative">
+            <div className="px-5 py-4 border-b border-white/8 flex items-center justify-between sticky top-0 bg-[#0a0a0a]">
+              <span className="text-[11px] font-medium tracking-[0.2em] text-white/40 uppercase">Statistics</span>
+              <button onClick={() => setShowStats(false)} className="text-white/25 hover:text-white/60 transition-colors cursor-pointer md:hidden">
+                <X size={14} />
               </button>
             </div>
-            
-            <div className="p-4 space-y-6">
+
+            <div className="p-5 space-y-8">
+              {/* Overview */}
               <div>
-                <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Overview</h4>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                    <div className="text-2xl font-bold text-gray-800">{chat.messages.length}</div>
-                    <div className="text-xs text-gray-500">Total Messages</div>
-                  </div>
-                  <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                    <div className="text-2xl font-bold text-gray-800">{chat.senders.length}</div>
-                    <div className="text-xs text-gray-500">Participants</div>
-                  </div>
+                <p className="text-[11px] tracking-[0.2em] text-white/25 uppercase mb-4">Overview</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { value: chat.messages.length.toLocaleString(), label: 'Messages' },
+                    { value: chat.senders.length.toString(), label: 'Participants' },
+                  ].map(stat => (
+                    <div key={stat.label} className="border border-white/8 p-3">
+                      <p className="text-xl font-semibold text-white tracking-tight">{stat.value}</p>
+                      <p className="text-[11px] text-white/30 mt-0.5">{stat.label}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
 
+              {/* Per sender */}
               <div>
-                <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Messages by Sender</h4>
-                <div className="space-y-3">
-                  {chat.senders.map(sender => {
+                <p className="text-[11px] tracking-[0.2em] text-white/25 uppercase mb-4">By Sender</p>
+                <div className="space-y-4">
+                  {chat.senders.map((sender, i) => {
                     const count = chat.messages.filter(m => m.sender === sender).length;
-                    const percentage = Math.round((count / chat.messages.length) * 100);
+                    const pct = Math.round((count / chat.messages.length) * 100);
                     return (
                       <div key={sender}>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span className="font-medium text-gray-700 truncate max-w-[150px]">{sender}</span>
-                          <span className="text-gray-500">{count} ({percentage}%)</span>
+                        <div className="flex justify-between items-baseline mb-1.5">
+                          <span className={`text-xs font-medium truncate max-w-[140px] ${SENDER_ACCENTS[i % SENDER_ACCENTS.length]}`}>{sender}</span>
+                          <span className="text-[11px] font-mono text-white/35 shrink-0">{count.toLocaleString()} · {pct}%</span>
                         </div>
-                        <div className="w-full bg-gray-100 rounded-full h-2">
-                          <div 
-                            className="bg-emerald-500 h-2 rounded-full" 
-                            style={{ width: `${percentage}%` }}
-                          ></div>
+                        <div className="w-full bg-white/5 h-px">
+                          <div className="bg-white/30 h-px transition-all" style={{ width: `${pct}%` }} />
                         </div>
                       </div>
                     );
@@ -308,6 +296,16 @@ export function ChatViewer({ chat, chatName, onBack }: ChatViewerProps) {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function DateDivider({ date }: { date: string }) {
+  return (
+    <div className="flex items-center gap-4 my-5 px-0">
+      <div className="flex-1 border-t border-white/[0.06]" />
+      <span className="text-[11px] font-mono text-white/25 tracking-wide whitespace-nowrap">{date}</span>
+      <div className="flex-1 border-t border-white/[0.06]" />
     </div>
   );
 }

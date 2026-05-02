@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 /Users/brooklyn/.claude/skills/ui-ux-pro-max/scripts/search.py \"secure privacy tool dark premium minimal\" --design-system -p \"WArchive SecureChat\")",
+      "Bash(python3 /Users/brooklyn/.claude/skills/ui-ux-pro-max/scripts/search.py \"security privacy dark premium glassmorphism\" --domain style)",
+      "Bash(python3 /Users/brooklyn/.claude/skills/ui-ux-pro-max/scripts/search.py \"security tool dark premium\" --domain color)",
+      "Bash(python3 /Users/brooklyn/.claude/skills/ui-ux-pro-max/scripts/search.py \"editorial agency portfolio dark brutalist luxury\" --design-system -p \"SecureChat\")",
+      "Bash(python3 /Users/brooklyn/.claude/skills/ui-ux-pro-max/scripts/search.py \"editorial brutalist dark agency\" --domain style -n 3)"
+    ]
+  }
+}

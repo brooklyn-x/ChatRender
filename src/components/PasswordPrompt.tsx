@@ -18,7 +18,7 @@ export function PasswordPrompt({ mode, onSubmit, isLoading, error }: PasswordPro
     setLocalError('');
 
     if (password.length < 6) {
-      setLocalError('Password must be at least 6 characters long.');
+      setLocalError('Password must be at least 6 characters.');
       return;
     }
 
@@ -31,31 +31,32 @@ export function PasswordPrompt({ mode, onSubmit, isLoading, error }: PasswordPro
   };
 
   return (
-    <div className="w-full max-w-md mx-auto bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
-      <div className="flex justify-center mb-6">
-        <div className={`p-4 rounded-full ${mode === 'encrypt' ? 'bg-blue-100 text-blue-600' : 'bg-emerald-100 text-emerald-600'}`}>
-          {mode === 'encrypt' ? <Lock size={32} /> : <KeyRound size={32} />}
+    <div className="w-full max-w-md mx-auto">
+      {/* Icon + heading */}
+      <div className="mb-8">
+        <div className={`inline-flex p-3 border mb-6 ${mode === 'encrypt' ? 'border-white/15 text-white/60' : 'border-white/15 text-white/60'}`}>
+          {mode === 'encrypt' ? <Lock size={24} strokeWidth={1.5} /> : <KeyRound size={24} strokeWidth={1.5} />}
         </div>
+        <h2 className="text-3xl font-semibold tracking-tight text-white mb-2">
+          {mode === 'encrypt' ? 'Lock this chat.' : 'Unlock this chat.'}
+        </h2>
+        <p className="text-sm text-white/45 leading-relaxed">
+          {mode === 'encrypt'
+            ? 'Set a password. It encrypts locally using AES-256-GCM. Lose it and the data is gone — permanently.'
+            : 'Enter the password you used when you first locked this chat.'}
+        </p>
       </div>
-      
-      <h2 className="text-2xl font-bold text-center text-gray-800 mb-2">
-        {mode === 'encrypt' ? 'Secure Your Chat' : 'Unlock Chat'}
-      </h2>
-      
-      <p className="text-center text-gray-500 mb-8 text-sm">
-        {mode === 'encrypt' 
-          ? 'Create a password to encrypt this chat. You will need it to view the chat later. If you lose it, the data cannot be recovered.' 
-          : 'Enter the password you used to encrypt this chat.'}
-      </p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+          <label className="block text-[11px] font-medium tracking-[0.15em] text-white/40 uppercase mb-2">
+            Password
+          </label>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
+            className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white placeholder:text-white/20 focus:outline-none focus:border-white/30 focus:bg-white/8 transition-all text-sm"
             placeholder="Enter password"
             required
             autoFocus
@@ -64,12 +65,14 @@ export function PasswordPrompt({ mode, onSubmit, isLoading, error }: PasswordPro
 
         {mode === 'encrypt' && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+            <label className="block text-[11px] font-medium tracking-[0.15em] text-white/40 uppercase mb-2">
+              Confirm Password
+            </label>
             <input
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
+              className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white placeholder:text-white/20 focus:outline-none focus:border-white/30 focus:bg-white/8 transition-all text-sm"
               placeholder="Confirm password"
               required
             />
@@ -77,22 +80,22 @@ export function PasswordPrompt({ mode, onSubmit, isLoading, error }: PasswordPro
         )}
 
         {(error || localError) && (
-          <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100">
+          <p className="text-sm text-red-400 border border-red-500/20 bg-red-500/5 px-4 py-3">
             {error || localError}
-          </div>
+          </p>
         )}
 
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full py-3 px-4 bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-70"
+          className="w-full py-3 px-4 bg-white text-black text-sm font-medium flex items-center justify-center gap-2 hover:bg-white/90 transition-colors disabled:opacity-40 cursor-pointer mt-2"
         >
           {isLoading ? (
-            <Loader2 size={20} className="animate-spin" />
+            <Loader2 size={18} className="animate-spin" />
           ) : (
             <>
               {mode === 'encrypt' ? 'Encrypt & Save' : 'Decrypt & View'}
-              <ArrowRight size={18} />
+              <ArrowRight size={16} />
             </>
           )}
         </button>
